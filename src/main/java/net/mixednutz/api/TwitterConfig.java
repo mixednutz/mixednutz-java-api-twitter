@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.social.twitter.connect.TwitterConnectionFactory;
 
+import net.mixednutz.api.twitter.adapter.TwitterService;
+
 @Configuration
 @ConfigurationProperties(prefix="mixednutz.social")
 public class TwitterConfig {
@@ -15,6 +17,10 @@ public class TwitterConfig {
 	public TwitterConnectionFactory twitterConnectionFactory() {
 		return new TwitterConnectionFactory(twitter.consumerKey, 
 				twitter.consumerSecret);
+	}
+	@Bean
+	public TwitterService twitterService() {
+		return new TwitterService(twitterConnectionFactory());
 	}
 
 	public TwitterConnectionProperties getTwitter() {

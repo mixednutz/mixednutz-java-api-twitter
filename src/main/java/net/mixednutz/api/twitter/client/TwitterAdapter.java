@@ -1,0 +1,49 @@
+package net.mixednutz.api.twitter.client;
+
+import org.springframework.social.twitter.api.Twitter;
+
+import net.mixednutz.api.client.GroupClient;
+import net.mixednutz.api.client.MixednutzClient;
+import net.mixednutz.api.client.TimelineClient;
+import net.mixednutz.api.client.UserClient;
+
+/**
+ * Adapter around the native Twitter client so we can use the MixednutzClient API
+ * 
+ * @author apfesta
+ *
+ */
+public class TwitterAdapter implements MixednutzClient {
+	
+	private Twitter twitter;
+	private TwitterTimelineAdapter timelineAdapter;
+
+	public TwitterAdapter(Twitter twitter) {
+		super();
+		this.twitter = twitter;
+		initSubApis();
+	}
+
+	@Override
+	public GroupClient getGroupClient() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public TimelineClient<Long> getTimelineClient() {
+		return timelineAdapter;
+	}
+
+	@Override
+	public UserClient<Long> getUserClient() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private void initSubApis() {
+		timelineAdapter = new TwitterTimelineAdapter(twitter.timelineOperations());
+	}
+	
+
+}
