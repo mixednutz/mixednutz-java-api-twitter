@@ -28,7 +28,8 @@
 		
 		<mixednutz-api.version>2.0.0-SNAPSHOT</mixednutz-api.version>
 		<mixednutz-api-core.version>2.0.0-SNAPSHOT</mixednutz-api-core.version>
-		<spring-social-twitter.version>1.1.0.RELEASE</spring-social-twitter.version>
+		<twitter4j.version>4.0.2</twitter4j.version>
+	
 	</properties>
 
 	<build>
@@ -66,11 +67,18 @@
 		    <artifactId>spring-web</artifactId>
 		</dependency>
 		
-	    <dependency>
-		    <groupId>org.springframework.social</groupId>
-		    <artifactId>spring-social-twitter</artifactId>
-		    <version>${spring-social-twitter.version}</version>
-		</dependency>
+	    <!-- Twitter -->
+		<dependency>
+      		<groupId>org.twitter4j</groupId>
+			<artifactId>twitter4j-core</artifactId>
+			<version>${twitter4j.version}</version>
+			<exclusions>
+				<exclusion>
+				  <groupId>org.slf4j</groupId>
+				  <artifactId>nlog4j</artifactId>
+				</exclusion>
+			</exclusions>
+    	</dependency>
 				
 		<!-- Testing -->
 	  	<dependency>

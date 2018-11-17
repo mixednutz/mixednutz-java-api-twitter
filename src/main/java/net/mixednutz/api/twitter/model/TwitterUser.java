@@ -2,24 +2,23 @@ package net.mixednutz.api.twitter.model;
 
 import java.util.List;
 
-import org.springframework.social.twitter.api.TwitterProfile;
-
 import net.mixednutz.api.core.model.Image;
 import net.mixednutz.api.model.IAction;
 import net.mixednutz.api.model.IImage;
 import net.mixednutz.api.model.IUserSmall;
+import twitter4j.User;
 
 public class TwitterUser implements IUserSmall {
 	
-	TwitterProfile twitterProfile;
+	User user;
 
-	public TwitterUser(TwitterProfile twitterProfile) {
-		this.twitterProfile = twitterProfile;
+	public TwitterUser(User user) {
+		this.user = user;
 	}
 
 	@Override
 	public String getUrl() {
-		return twitterProfile.getUrl();
+		return user.getURL();
 	}
 
 
@@ -36,17 +35,17 @@ public class TwitterUser implements IUserSmall {
 
 	@Override
 	public String getUsername() {
-		return twitterProfile.getScreenName();
+		return user.getScreenName();
 	}
 
 	@Override
 	public String getDisplayName() {
-		return twitterProfile.getName();
+		return user.getName();
 	}
 
 	@Override
 	public IImage getAvatar() {
-		return new Image(twitterProfile.getProfileImageUrl(),getUsername()+"'s profile image");
+		return new Image(user.getProfileImageURL(), getUsername()+"'s profile image");
 	}
 
 }

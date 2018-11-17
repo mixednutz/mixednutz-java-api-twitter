@@ -1,11 +1,12 @@
 package net.mixednutz.api.twitter.client;
 
-import org.springframework.social.twitter.api.Twitter;
+import org.springframework.social.connect.Connection;
 
 import net.mixednutz.api.client.GroupClient;
 import net.mixednutz.api.client.MixednutzClient;
 import net.mixednutz.api.client.TimelineClient;
 import net.mixednutz.api.client.UserClient;
+import twitter4j.Twitter;
 
 /**
  * Adapter around the native Twitter client so we can use the MixednutzClient API
@@ -15,12 +16,12 @@ import net.mixednutz.api.client.UserClient;
  */
 public class TwitterAdapter implements MixednutzClient {
 	
-	private Twitter twitter;
+	private Connection<Twitter> conn;
 	private TwitterTimelineAdapter timelineAdapter;
 
-	public TwitterAdapter(Twitter twitter) {
+	public TwitterAdapter(Connection<Twitter> conn) {
 		super();
-		this.twitter = twitter;
+		this.conn = conn;
 		initSubApis();
 	}
 
@@ -42,7 +43,7 @@ public class TwitterAdapter implements MixednutzClient {
 	}
 
 	private void initSubApis() {
-		timelineAdapter = new TwitterTimelineAdapter(twitter.timelineOperations());
+		timelineAdapter = new TwitterTimelineAdapter(conn);
 	}
 	
 

@@ -1,19 +1,19 @@
-package net.mixednutz.api.twitter.adapter;
+package net.mixednutz.api.twitter.provider;
 
 import org.springframework.social.connect.Connection;
 import org.springframework.social.connect.ConnectionData;
 import org.springframework.social.connect.ConnectionFactory;
-import org.springframework.social.twitter.api.Twitter;
 
-import net.mixednutz.api.adapter.model.IOauth1Credentials;
 import net.mixednutz.api.core.adapter.AbstractSocialNetworkClient;
+import net.mixednutz.api.provider.IOauth1Credentials;
 import net.mixednutz.api.twitter.client.TwitterAdapter;
+import twitter4j.Twitter;
 
-public class TwitterService extends AbstractSocialNetworkClient<TwitterAdapter, IOauth1Credentials> {
+public class TwitterProvider extends AbstractSocialNetworkClient<TwitterAdapter, IOauth1Credentials> {
 
 	private ConnectionFactory<Twitter> connectionFactory;
 	
-	public TwitterService(ConnectionFactory<Twitter> connectionFactory) {
+	public TwitterProvider(ConnectionFactory<Twitter> connectionFactory) {
 		super(TwitterAdapter.class);
 		this.connectionFactory = connectionFactory;
 	}
@@ -27,7 +27,7 @@ public class TwitterService extends AbstractSocialNetworkClient<TwitterAdapter, 
 	public TwitterAdapter getApi(IOauth1Credentials creds) {
 		return new TwitterAdapter(
 				createConnection(
-						createConnectionData(creds)).getApi());
+						createConnectionData(creds)));
 	}
 	
 	protected ConnectionData createConnectionData(IOauth1Credentials creds) {

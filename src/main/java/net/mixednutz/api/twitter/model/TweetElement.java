@@ -6,8 +6,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.social.twitter.api.Tweet;
-
 import net.mixednutz.api.model.IAction;
 import net.mixednutz.api.model.IAlternateLink;
 import net.mixednutz.api.model.IGroupSmall;
@@ -15,10 +13,11 @@ import net.mixednutz.api.model.IReactionCount;
 import net.mixednutz.api.model.ITagCount;
 import net.mixednutz.api.model.ITimelineElement;
 import net.mixednutz.api.twitter.TwitterFeedType;
+import twitter4j.Status;
 
 public class TweetElement implements ITimelineElement {
 	
-	private Tweet tweet;
+	private Status status;
 	private static ITimelineElement.Type TYPE = new ITimelineElement.Type(){
 		@Override
 		public String getName() {return "tweet";}
@@ -27,15 +26,15 @@ public class TweetElement implements ITimelineElement {
 		};
 	
 	
-	public TweetElement(Tweet tweet) {
+	public TweetElement(Status status) {
 		super();
-		this.tweet = tweet;
+		this.status = status;
 	}
 
 	@Override
 	public String getUrl() {
-		return "https://twitter.com/"+tweet.getUser().getScreenName()+
-				"/status/"+tweet.getId();
+		return "https://twitter.com/"+status.getUser().getScreenName()+
+				"/status/"+status.getId();
 	}
 
 	@Override
@@ -56,7 +55,7 @@ public class TweetElement implements ITimelineElement {
 
 	@Override
 	public TwitterUser getPostedByUser() {
-		return new TwitterUser(tweet.getUser());
+		return new TwitterUser(status.getUser());
 	}
 
 	@Override
@@ -66,7 +65,7 @@ public class TweetElement implements ITimelineElement {
 
 	@Override
 	public ZonedDateTime getPostedOnDate() {
-		return ZonedDateTime.ofInstant(tweet.getCreatedAt().toInstant(), ZoneId.systemDefault());
+		return ZonedDateTime.ofInstant(status.getCreatedAt().toInstant(), ZoneId.systemDefault());
 	}
 
 	@Override
@@ -77,7 +76,7 @@ public class TweetElement implements ITimelineElement {
 
 	@Override
 	public Long getPaginationId() {
-		return tweet.getId();
+		return status.getId();
 	}
 
 	@Override
@@ -88,7 +87,7 @@ public class TweetElement implements ITimelineElement {
 
 	@Override
 	public String getDescription() {
-		return tweet.getUser().getScreenName()+": "+tweet.getText();
+		return status.getUser().getScreenName()+": "+status.getText();
 	}
 
 	@Override
@@ -115,12 +114,12 @@ public class TweetElement implements ITimelineElement {
 	@Override
 	public List<RetweetCount> getReshares() {
 		return Collections.singletonList(
-				new RetweetCount(tweet.getRetweetCount(), 
+				new RetweetCount(status.getRetweetCount(), 
 						TwitterFeedType.getInstance()));
 	}
 	
 	public FavoriteCount getFavorites() {
-		return new FavoriteCount(tweet.getFavoriteCount());
+		return new FavoriteCount(status.getFavoriteCount());
 	}
 
 }

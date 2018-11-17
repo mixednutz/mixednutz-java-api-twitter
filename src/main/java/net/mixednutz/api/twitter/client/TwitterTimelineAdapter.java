@@ -1,11 +1,17 @@
 package net.mixednutz.api.twitter.client;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import org.springframework.social.twitter.api.TimelineOperations;
-import org.springframework.social.twitter.api.Tweet;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.social.connect.Connection;
 
 import net.mixednutz.api.client.TimelineClient;
 import net.mixednutz.api.core.model.Page;
@@ -15,22 +21,40 @@ import net.mixednutz.api.model.IPageRequest;
 import net.mixednutz.api.model.ITimelineElement;
 import net.mixednutz.api.model.SortDirection;
 import net.mixednutz.api.twitter.model.TweetElement;
-import net.mixednutz.api.twitter.model.TwitterPagination;
+import twitter4j.Paging;
+import twitter4j.RateLimitStatus;
+import twitter4j.ResponseList;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
 
 
 public class TwitterTimelineAdapter implements TimelineClient<Long> {
 	
-	TimelineOperations internal;
+	private static final Log LOG = LogFactory.getLog(TwitterTimelineAdapter.class);
 	
+//	private static Map<Connection<Twitter>, Long> nextSearchRequest=
+//			new HashMap<Connection<Twitter>, Long>();
+	private static Map<Connection<Twitter>, Long> nextHomeRequest=
+			new HashMap<Connection<Twitter>, Long>();
+//	private static Map<Connection<Twitter>, Long> nextShowRequest=
+//			new HashMap<Connection<Twitter>, Long>();
 	
-	/* Rate limits */
-//	private Long nextSearchRequest=0L;
-	private Long nextHomeRequest=0L;
-//	private Long nextShowRequest=0L;
+	/**
+	 * Sorts Twitter Status reverse chronologically (newest first)
+	 */
+	private Comparator<Status> statusComparator = new Comparator<Status>() {
+		@Override
+		public int compare(Status o1, Status o2) {
+			return -o1.compareTo(o2);
+		}};
+	
 
-	public TwitterTimelineAdapter(TimelineOperations internal) {
+	Connection<Twitter> conn;
+
+	public TwitterTimelineAdapter(Connection<Twitter> conn) {
 		super();
-		this.internal = internal;
+		this.conn = conn;
 	}
 
 	@Override
@@ -40,45 +64,48 @@ public class TwitterTimelineAdapter implements TimelineClient<Long> {
 
 	@Override
 	public Page<TweetElement, Long> getTimeline(IPageRequest<Long> pagination) {
-		TwitterPagination twitterPagination = toTwitterPagination(pagination);
+		Paging paging = toTwitterPaging(pagination);
 		
 		//TODO Handle search hashtags
-		
-		if (twitterPagination.getMaxId()==0 && twitterPagination.getSinceId()>0) {
-			//Only sleep when checking for newer items
-			sleepUntilNextAllowedHomeRequest();
-		}
-		
-		//We add +5 to the count because the count is not guaranteed
-		//according to twitter api, deleted tweets get removed after the
-		//count is applied
-		List<Tweet> response;
-		if (twitterPagination.getPageSize()!=null && 
-				(twitterPagination.getSinceId()>0 || 
-				twitterPagination.getMaxId()>0)) {
-			response = internal.getHomeTimeline(twitterPagination.getPageSize()+5, 
-					twitterPagination.getSinceId(), twitterPagination.getMaxId());
-		} else if (twitterPagination.getPageSize()!=null) {
-			response = internal.getHomeTimeline(twitterPagination.getPageSize()+5);
-		} else {
-			response = internal.getHomeTimeline();
-		}
-		updateHomeRateLimit();
-		
-		List<Tweet> results = new ArrayList<>();
-		for (Tweet tweet: response) {
-			//TODO do filter for hashtag
-			results.add(tweet);
-		}
-		
-		//Remember when we added +5? Let's
-		//trim to ensure results match original page count
-		if (!results.isEmpty() && 
-				twitterPagination.getPageSize()>0 && results.size()>twitterPagination.getPageSize()) {
-			results = results.subList(0, twitterPagination.getPageSize());
-		}
+				
+		try {
+			ResponseList<Status> response;
 			
-		return toPage(results, twitterPagination);
+			//We add +5 to the count because the count is not guaranteed
+			//according to twitter api, deleted tweets get removed after the
+			//count is applied
+			paging.setCount(pagination!=null&&pagination.getPageSize()>0?pagination.getPageSize()+5:20);
+			
+			if (paging.getMaxId()==0 && paging.getSinceId()>0) {
+				//Only sleep when checking for newer items
+				sleepUntilNextAllowedHomeRequest(conn);
+			}
+			
+			response = conn.getApi().getHomeTimeline(paging);
+			updateHomeRateLimit(conn, response.getRateLimitStatus());
+			
+			List<Status> results = new ArrayList<Status>();
+			for (Status status: response) {
+				//TODO do filter for hashtag
+				results.add(status);
+			}
+			
+			//Remember when we added +5? Let's
+			//trim to ensure results match original page count
+			if (!results.isEmpty() && 
+					pagination!=null && pagination.getPageSize()>0 && results.size()>pagination.getPageSize()) {
+				results = results.subList(0, pagination.getPageSize());
+				paging.setCount(pagination.getPageSize());
+			}
+			
+			//Re-sort
+			Collections.sort(results, statusComparator);
+			
+			//Wrap in Page
+			return toPage(results, paging);
+		} catch (TwitterException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -92,10 +119,11 @@ public class TwitterTimelineAdapter implements TimelineClient<Long> {
 		return null;
 	}
 
-	TwitterPagination toTwitterPagination(IPageRequest<Long> pageRequest) {
-		TwitterPagination twitterPagination = new TwitterPagination();
+	Paging toTwitterPaging(IPageRequest<Long> pageRequest) {
+		Paging paging = new Paging();
 		if (pageRequest!=null) {
-			twitterPagination.setPageSize(pageRequest.getPageSize());
+			paging.setCount(pageRequest.getPageSize());
+			
 			if (pageRequest.getSortDirection()==SortDirection.DESC){
 				
 				//Validate
@@ -103,18 +131,18 @@ public class TwitterTimelineAdapter implements TimelineClient<Long> {
 						pageRequest.getStart()>pageRequest.getEnd()) {
 					
 					if (pageRequest.getStart()!=null) {
-						twitterPagination.setMaxId(pageRequest.getStart());
+						paging.setMaxId(pageRequest.getStart());
 					}
 					if (pageRequest.getEnd()!=null) {
-						twitterPagination.setSinceId(pageRequest.getEnd());
+						paging.setSinceId(pageRequest.getEnd());
 					}	
 				}
 			} else {
 				throw new UnsupportedOperationException("Twitter doesnt do chronological sort");
 			}
-		} 		
-		
-		return twitterPagination;
+		}
+				
+		return paging;
 	}
 	
 	PageRequest<Long> toPageRequest(Integer pageSize, Long maxId, Long sinceId) {
@@ -130,20 +158,20 @@ public class TwitterTimelineAdapter implements TimelineClient<Long> {
 		return pageRequest;
 	}
 	
-	Page<TweetElement, Long> toPage(List<Tweet> items, TwitterPagination prevPage) {
+	Page<TweetElement, Long> toPage(List<Status> items, Paging prevPage) {
 		LinkedList<TweetElement> newItemList = new LinkedList<>();
-		for (Tweet item: items) {
+		for (Status item: items) {
 			newItemList.add(new TweetElement(item));
 		}
 				
 		Page<TweetElement, Long> newPage = new Page<>();
 		newPage.setItems(newItemList);
 		if (prevPage!=null) {
-			newPage.setPageRequest(toPageRequest(prevPage.getPageSize(), 
+			newPage.setPageRequest(toPageRequest(prevPage.getCount(), 
 					prevPage.getMaxId(), prevPage.getSinceId()));
 		}
 		if (!items.isEmpty()) {
-			int pageSize =prevPage!=null&&prevPage.getPageSize()!=null?prevPage.getPageSize():items.size();
+			int pageSize =prevPage!=null&&prevPage.getCount()>0?prevPage.getCount():items.size();
 			newPage.setNextPage(toPageRequest(pageSize, 
 					newItemList.getLast().getPaginationId(), null));
 			newPage.setHasNext(true);
@@ -154,8 +182,43 @@ public class TwitterTimelineAdapter implements TimelineClient<Long> {
 		return newPage;
 	}
 	
-	private static synchronized void updateHomeRateLimit() {
-		//nextHomeRequest.put(conn, getNextRequest(rateLimitStatus));
+//	private static synchronized void updateSearchRateLimit(Connection<Twitter> conn, 
+//			RateLimitStatus rateLimitStatus) {
+//		nextSearchRequest.put(conn, getNextRequest(rateLimitStatus));
+//	}
+	
+	private static synchronized void updateHomeRateLimit(Connection<Twitter> conn, 
+			RateLimitStatus rateLimitStatus) {
+		nextHomeRequest.put(conn, getNextRequest(rateLimitStatus));
+	}
+	
+//	private static synchronized void updateShowRateLimit(Connection<Twitter> conn, 
+//			RateLimitStatus rateLimitStatus) {
+//		nextShowRequest.put(conn, getNextRequest(rateLimitStatus));
+//	}
+	
+	private static long getNextRequest(RateLimitStatus rateLimitStatus) {
+		long now = System.currentTimeMillis();
+		int searchRequestsRemaining = rateLimitStatus.getRemaining();
+		LOG.debug("Requests Remaining:"+searchRequestsRemaining);
+		
+		long searchResetTime = ((long)rateLimitStatus.getResetTimeInSeconds())*1000;
+		LOG.debug("Reset Time:"+new Date(searchResetTime));
+		
+		long msecsRemaining = searchResetTime-now;
+		LOG.debug("Remaining Time(ms):"+msecsRemaining+" ");
+		
+		long nextHomeRequest;
+		if (searchRequestsRemaining>1) {
+			long msPerRequest = msecsRemaining/(searchRequestsRemaining-1);
+			nextHomeRequest = now+msPerRequest;
+		} else {
+			nextHomeRequest=searchResetTime+1000;
+		}
+		
+		LOG.debug("Next Request: "+new Date(nextHomeRequest));
+		
+		return nextHomeRequest;
 	}
 	
 	private static void sleep(long ms) {
@@ -169,16 +232,14 @@ public class TwitterTimelineAdapter implements TimelineClient<Long> {
 			sleep(ms);
 		}
 	}
-//	private void sleepUntilNextAllowedSearchRequest() {
-//		sleepUntil(nextSearchRequest);
+//	private static void sleepUntilNextAllowedSearchRequest(Connection<Twitter> conn) {
+//		sleepUntil(nextSearchRequest.containsKey(conn)?nextSearchRequest.get(conn):0);
 //	}
-	private void sleepUntilNextAllowedHomeRequest() {
-		synchronized (internal) {
-			sleepUntil(nextHomeRequest);
-		}
+	private static void sleepUntilNextAllowedHomeRequest(Connection<Twitter> conn) {
+		sleepUntil(nextHomeRequest.containsKey(conn)?nextHomeRequest.get(conn):0);
 	}	
-//	private void sleepUntilNextAllowedShowRequest() {
-//		sleepUntil(nextShowRequest);
+//	private static void sleepUntilNextAllowedShowRequest(Connection<Twitter> conn) {
+//		sleepUntil(nextShowRequest.containsKey(conn)?nextShowRequest.get(conn):0);
 //	}	
 
 }

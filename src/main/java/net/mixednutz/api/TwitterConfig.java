@@ -3,9 +3,9 @@ package net.mixednutz.api;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.social.twitter.connect.TwitterConnectionFactory;
+import org.springframework.social.twitter4j.connect.TwitterConnectionFactory;
 
-import net.mixednutz.api.twitter.adapter.TwitterService;
+import net.mixednutz.api.twitter.provider.TwitterProvider;
 
 @Configuration
 @ConfigurationProperties(prefix="mixednutz.social")
@@ -19,8 +19,8 @@ public class TwitterConfig {
 				twitter.consumerSecret);
 	}
 	@Bean
-	public TwitterService twitterService() {
-		return new TwitterService(twitterConnectionFactory());
+	public TwitterProvider twitterService() {
+		return new TwitterProvider(twitterConnectionFactory());
 	}
 
 	public TwitterConnectionProperties getTwitter() {
