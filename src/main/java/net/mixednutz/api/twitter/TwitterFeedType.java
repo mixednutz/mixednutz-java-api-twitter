@@ -31,4 +31,14 @@ public class TwitterFeedType implements INetworkInfoSmall {
 		}
 		return instance;
 	}
+
+	@Override
+	public String[] compatibleMimeTypes() {
+		return new String[] {
+				"text/plain", //text and links
+				"image/*" //images
+				};
+	}
+	
+	
 }

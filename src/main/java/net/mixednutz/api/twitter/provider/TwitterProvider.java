@@ -4,12 +4,13 @@ import org.springframework.social.connect.Connection;
 import org.springframework.social.connect.ConnectionData;
 import org.springframework.social.connect.ConnectionFactory;
 
-import net.mixednutz.api.core.adapter.AbstractSocialNetworkClient;
+import net.mixednutz.api.core.provider.AbstractApiProvider;
 import net.mixednutz.api.provider.IOauth1Credentials;
+import net.mixednutz.api.twitter.TwitterFeedType;
 import net.mixednutz.api.twitter.client.TwitterAdapter;
 import twitter4j.Twitter;
 
-public class TwitterProvider extends AbstractSocialNetworkClient<TwitterAdapter, IOauth1Credentials> {
+public class TwitterProvider extends AbstractApiProvider<TwitterAdapter, IOauth1Credentials> {
 
 	private ConnectionFactory<Twitter> connectionFactory;
 	
@@ -37,6 +38,11 @@ public class TwitterProvider extends AbstractSocialNetworkClient<TwitterAdapter,
 	
 	protected Connection<Twitter> createConnection(ConnectionData cd) {
 		return connectionFactory.createConnection(cd);
+	}
+
+	@Override
+	public TwitterFeedType getNetworkInfo() {
+		return new TwitterFeedType();
 	}
 
 }
