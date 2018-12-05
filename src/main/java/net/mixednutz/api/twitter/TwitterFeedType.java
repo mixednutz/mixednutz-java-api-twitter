@@ -6,6 +6,7 @@ public class TwitterFeedType implements INetworkInfoSmall {
 	
 	private static final String DISPLAY_NAME = "Twitter";
 	private static final String HOST_NAME = "twitter.com";
+	private static final String ID = "twitter";
 	private static final String ICON_NAME = "twitter";
 	
 	private static TwitterFeedType instance;
@@ -18,6 +19,11 @@ public class TwitterFeedType implements INetworkInfoSmall {
 	@Override
 	public String getHostName() {
 		return HOST_NAME;
+	}
+
+	@Override
+	public String getId() {
+		return ID;
 	}
 
 	@Override
