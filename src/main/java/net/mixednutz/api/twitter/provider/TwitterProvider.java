@@ -15,7 +15,7 @@ public class TwitterProvider extends AbstractApiProvider<TwitterAdapter, IOauth1
 	private ConnectionFactory<Twitter> connectionFactory;
 	
 	public TwitterProvider(ConnectionFactory<Twitter> connectionFactory) {
-		super(TwitterAdapter.class);
+		super(TwitterAdapter.class, IOauth1Credentials.class);
 		this.connectionFactory = connectionFactory;
 	}
 
