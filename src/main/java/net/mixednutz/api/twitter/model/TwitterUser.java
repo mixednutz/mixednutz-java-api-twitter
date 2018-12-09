@@ -48,4 +48,9 @@ public class TwitterUser implements IUserSmall {
 		return new Image(user.getProfileImageURL(), getUsername()+"'s profile image");
 	}
 
+	@Override
+	public String getId() {
+		return Long.toString(user.getId());
+	}
+
 }

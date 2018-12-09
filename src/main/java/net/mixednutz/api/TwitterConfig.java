@@ -28,7 +28,7 @@ public class TwitterConfig {
 	}
 	
 	@Bean
-	public CredentialsInterceptor<Twitter, IOauth1Credentials> credentialsInterceptor(CredentialsCallback callback) {
+	public CredentialsInterceptor<Twitter, IOauth1Credentials> twitterCredentialsInterceptor(CredentialsCallback callback) {
 		return new TwitterCredentialsInterceptor(callback);
 	}
 
