@@ -1,5 +1,6 @@
 package net.mixednutz.api.twitter.model;
 
+import java.io.Serializable;
 import java.util.List;
 
 import net.mixednutz.api.core.model.Image;
@@ -34,6 +35,11 @@ public class TwitterUser implements IUserSmall {
 	}
 
 	@Override
+	public Serializable getProviderId() {
+		return user.getId();
+	}
+
+	@Override
 	public String getUsername() {
 		return user.getScreenName();
 	}
@@ -46,11 +52,6 @@ public class TwitterUser implements IUserSmall {
 	@Override
 	public IImage getAvatar() {
 		return new Image(user.getProfileImageURL(), getUsername()+"'s profile image");
-	}
-
-	@Override
-	public String getId() {
-		return Long.toString(user.getId());
 	}
 
 }

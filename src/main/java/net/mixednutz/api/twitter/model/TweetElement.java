@@ -1,7 +1,9 @@
 package net.mixednutz.api.twitter.model;
 
+import java.io.Serializable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -17,7 +19,12 @@ import twitter4j.Status;
 
 public class TweetElement implements ITimelineElement {
 	
+	private static final String APPLICATION_JSON_OEMBED = "application/json+oembed";
+	
 	private Status status;
+	private String url;
+	private List<AlternateLink> alternateLinks = new ArrayList<>();
+	
 	private static ITimelineElement.Type TYPE = new ITimelineElement.Type(){
 		@Override
 		public String getName() {return "tweet";}
@@ -29,12 +36,20 @@ public class TweetElement implements ITimelineElement {
 	public TweetElement(Status status) {
 		super();
 		this.status = status;
+		this.url = "https://twitter.com/"+status.getUser().getScreenName()+
+				"/status/"+status.getId();
+		this.alternateLinks.add(new AlternateLink("https://publish.twitter.com/oembed?url="+url,
+				APPLICATION_JSON_OEMBED));
+	}
+
+	@Override
+	public Serializable getProviderId() {
+		return status.getId();
 	}
 
 	@Override
 	public String getUrl() {
-		return "https://twitter.com/"+status.getUser().getScreenName()+
-				"/status/"+status.getId();
+		return url;
 	}
 
 	@Override
@@ -91,9 +106,8 @@ public class TweetElement implements ITimelineElement {
 	}
 
 	@Override
-	public Collection<? extends IAlternateLink> getAlternateLinks() {
-		// TODO Auto-generated method stub
-		return null;
+	public Collection<AlternateLink> getAlternateLinks() {
+		return this.alternateLinks;
 	}
 
 
@@ -121,5 +135,34 @@ public class TweetElement implements ITimelineElement {
 	public FavoriteCount getFavorites() {
 		return new FavoriteCount(status.getFavoriteCount());
 	}
+	
+	public static class AlternateLink implements IAlternateLink {
 
+		private String href;
+		private String type;
+
+		public AlternateLink(String href, String type) {
+			super();
+			this.href = href;
+			this.type = type;
+		}
+
+		public String getHref() {
+			return href;
+		}
+
+		public void setHref(String href) {
+			this.href = href;
+		}
+
+		public String getType() {
+			return type;
+		}
+
+		public void setType(String type) {
+			this.type = type;
+		}
+		
+	}
+	
 }
