@@ -1,7 +1,6 @@
 package net.mixednutz.api.twitter.client;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -43,10 +42,10 @@ public class TwitterTimelineAdapter implements TimelineClient<Long> {
 	/**
 	 * Sorts Twitter Status reverse chronologically (newest first)
 	 */
-	private Comparator<Status> statusComparator = new Comparator<Status>() {
+	protected Comparator<Status> statusComparator = new Comparator<Status>() {
 		@Override
 		public int compare(Status o1, Status o2) {
-			return -o1.compareTo(o2);
+			return o1.compareTo(o2);
 		}};
 	
 
@@ -97,10 +96,7 @@ public class TwitterTimelineAdapter implements TimelineClient<Long> {
 				results = results.subList(0, pagination.getPageSize());
 				paging.setCount(pagination.getPageSize());
 			}
-			
-			//Re-sort
-			Collections.sort(results, statusComparator);
-			
+						
 			//Wrap in Page
 			return toPage(results, paging);
 		} catch (TwitterException e) {
