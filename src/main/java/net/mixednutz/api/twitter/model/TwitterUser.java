@@ -41,7 +41,7 @@ public class TwitterUser implements IUserSmall {
 
 	@Override
 	public String getUsername() {
-		return user.getScreenName();
+		return "@"+user.getScreenName();
 	}
 
 	@Override

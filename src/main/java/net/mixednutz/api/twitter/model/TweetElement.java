@@ -102,7 +102,7 @@ public class TweetElement implements ITimelineElement {
 
 	@Override
 	public String getDescription() {
-		return status.getUser().getScreenName()+": "+status.getText();
+		return status.getText();
 	}
 
 	@Override
