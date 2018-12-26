@@ -13,11 +13,13 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.social.connect.Connection;
 
 import net.mixednutz.api.client.TimelineClient;
+import net.mixednutz.api.client.UserClient;
 import net.mixednutz.api.core.model.Page;
 import net.mixednutz.api.core.model.PageRequest;
 import net.mixednutz.api.model.IPage;
 import net.mixednutz.api.model.IPageRequest;
 import net.mixednutz.api.model.ITimelineElement;
+import net.mixednutz.api.model.IUserSmall;
 import net.mixednutz.api.model.SortDirection;
 import net.mixednutz.api.twitter.model.TweetElement;
 import twitter4j.Paging;
@@ -28,16 +30,18 @@ import twitter4j.Twitter;
 import twitter4j.TwitterException;
 
 
-public class TwitterTimelineAdapter implements TimelineClient<Long> {
+public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<Long> {
 	
 	private static final Log LOG = LogFactory.getLog(TwitterTimelineAdapter.class);
 	
 //	private static Map<Connection<Twitter>, Long> nextSearchRequest=
 //			new HashMap<Connection<Twitter>, Long>();
-	private static Map<Connection<Twitter>, Long> nextHomeRequest=
+	private static Map<Connection<Twitter>, Long> nextHomeTimelineRequest=
 			new HashMap<Connection<Twitter>, Long>();
 //	private static Map<Connection<Twitter>, Long> nextShowRequest=
 //			new HashMap<Connection<Twitter>, Long>();
+	private static Map<Connection<Twitter>, Long> nextUserTimelineRequest=
+			new HashMap<Connection<Twitter>, Long>();
 	
 	/**
 	 * Sorts Twitter Status reverse chronologically (newest first)
@@ -77,11 +81,11 @@ public class TwitterTimelineAdapter implements TimelineClient<Long> {
 			
 			if (paging.getMaxId()==0 && paging.getSinceId()>0) {
 				//Only sleep when checking for newer items
-				sleepUntilNextAllowedHomeRequest(conn);
+				sleepUntilNextAllowedHomeTimelineRequest(conn);
 			}
 			
 			response = conn.getApi().getHomeTimeline(paging);
-			updateHomeRateLimit(conn, response.getRateLimitStatus());
+			updateHomeTimelineRateLimit(conn, response.getRateLimitStatus());
 			
 			List<Status> results = new ArrayList<Status>();
 			for (Status status: response) {
@@ -113,6 +117,82 @@ public class TwitterTimelineAdapter implements TimelineClient<Long> {
 	public IPage<? extends ITimelineElement, Long> getPublicTimeline(IPageRequest<Long> pagination) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public IUserSmall getUser() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IUserSmall getUser(String username) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Page<TweetElement, Long> getUserTimeline() {
+		return getUserTimeline((IPageRequest<Long>)null);
+	}
+
+	@Override
+	public Page<TweetElement, Long> getUserTimeline(IPageRequest<Long> pagination) {
+		Paging paging = toTwitterPaging(pagination);
+		
+		//TODO Handle search hashtags
+				
+		try {
+			ResponseList<Status> response;
+			
+			//We add +5 to the count because the count is not guaranteed
+			//according to twitter api, deleted tweets get removed after the
+			//count is applied
+			paging.setCount(pagination!=null&&pagination.getPageSize()>0?pagination.getPageSize()+5:20);
+			
+			if (paging.getMaxId()==0 && paging.getSinceId()>0) {
+				//Only sleep when checking for newer items
+				sleepUntilNextAllowedUserTimelineRequest(conn);
+			}
+			
+			response = conn.getApi().getUserTimeline(paging);
+			updateUserTimelineRateLimit(conn, response.getRateLimitStatus());
+			
+			List<Status> results = new ArrayList<Status>();
+			for (Status status: response) {
+				//TODO do filter for hashtag
+				results.add(status);
+			}
+			
+			//Remember when we added +5? Let's
+			//trim to ensure results match original page count
+			if (!results.isEmpty() && 
+					pagination!=null && pagination.getPageSize()>0 && results.size()>pagination.getPageSize()) {
+				results = results.subList(0, pagination.getPageSize());
+				paging.setCount(pagination.getPageSize());
+			}
+						
+			//Wrap in Page
+			return toPage(results, paging);
+		} catch (TwitterException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public IPage<? extends ITimelineElement, Long> getUserTimeline(String username) {
+		throw new UnsupportedOperationException("Twitter does not allow unauthenticated timeline queries, so this isn't implemented");
+	}
+
+	@Override
+	public IPage<? extends ITimelineElement, Long> getUserTimeline(String username, IPageRequest<Long> pagination) {
+		return getUserTimeline(username, null);
+	}
+
+	@Override
+	public void subscribeToUser(String username) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	Paging toTwitterPaging(IPageRequest<Long> pageRequest) {
@@ -183,15 +263,20 @@ public class TwitterTimelineAdapter implements TimelineClient<Long> {
 //		nextSearchRequest.put(conn, getNextRequest(rateLimitStatus));
 //	}
 	
-	private static synchronized void updateHomeRateLimit(Connection<Twitter> conn, 
+	private static synchronized void updateHomeTimelineRateLimit(Connection<Twitter> conn, 
 			RateLimitStatus rateLimitStatus) {
-		nextHomeRequest.put(conn, getNextRequest(rateLimitStatus));
+		nextHomeTimelineRequest.put(conn, getNextRequest(rateLimitStatus));
 	}
 	
 //	private static synchronized void updateShowRateLimit(Connection<Twitter> conn, 
 //			RateLimitStatus rateLimitStatus) {
 //		nextShowRequest.put(conn, getNextRequest(rateLimitStatus));
 //	}
+	
+	private static synchronized void updateUserTimelineRateLimit(Connection<Twitter> conn, 
+			RateLimitStatus rateLimitStatus) {
+		nextUserTimelineRequest.put(conn, getNextRequest(rateLimitStatus));
+	}
 	
 	private static long getNextRequest(RateLimitStatus rateLimitStatus) {
 		long now = System.currentTimeMillis();
@@ -231,11 +316,14 @@ public class TwitterTimelineAdapter implements TimelineClient<Long> {
 //	private static void sleepUntilNextAllowedSearchRequest(Connection<Twitter> conn) {
 //		sleepUntil(nextSearchRequest.containsKey(conn)?nextSearchRequest.get(conn):0);
 //	}
-	private static void sleepUntilNextAllowedHomeRequest(Connection<Twitter> conn) {
-		sleepUntil(nextHomeRequest.containsKey(conn)?nextHomeRequest.get(conn):0);
+	private static void sleepUntilNextAllowedHomeTimelineRequest(Connection<Twitter> conn) {
+		sleepUntil(nextHomeTimelineRequest.containsKey(conn)?nextHomeTimelineRequest.get(conn):0);
 	}	
 //	private static void sleepUntilNextAllowedShowRequest(Connection<Twitter> conn) {
 //		sleepUntil(nextShowRequest.containsKey(conn)?nextShowRequest.get(conn):0);
 //	}	
-
+	private static void sleepUntilNextAllowedUserTimelineRequest(Connection<Twitter> conn) {
+		sleepUntil(nextUserTimelineRequest.containsKey(conn)?nextUserTimelineRequest.get(conn):0);
+	}
+	
 }
