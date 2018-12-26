@@ -54,4 +54,9 @@ public class TwitterUser implements IUserSmall {
 		return new Image(user.getProfileImageURL(), getUsername()+"'s profile image");
 	}
 
+	@Override
+	public boolean isPrivate() {
+		return user.isProtected();
+	}
+
 }
