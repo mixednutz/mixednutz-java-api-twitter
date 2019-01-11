@@ -1,6 +1,5 @@
 package net.mixednutz.api.twitter.model;
 
-import java.io.Serializable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -23,6 +22,7 @@ public class TweetElement implements ITimelineElement {
 	
 	private Status status;
 	private String url;
+	private String uri;
 	private List<AlternateLink> alternateLinks = new ArrayList<>();
 	
 	private static ITimelineElement.Type TYPE = new ITimelineElement.Type(){
@@ -38,13 +38,15 @@ public class TweetElement implements ITimelineElement {
 		this.status = status;
 		this.url = "https://twitter.com/"+status.getUser().getScreenName()+
 				"/status/"+status.getId();
+		this.uri = status.getUser().getScreenName()+
+				"/status/"+status.getId();
 		this.alternateLinks.add(new AlternateLink("https://publish.twitter.com/oembed?url="+url,
 				APPLICATION_JSON_OEMBED));
 	}
 
 	@Override
-	public Serializable getProviderId() {
-		return status.getId();
+	public Long getProviderId() {
+		return Long.valueOf(status.getId());
 	}
 
 	@Override
@@ -54,7 +56,7 @@ public class TweetElement implements ITimelineElement {
 
 	@Override
 	public String getUri() {
-		return null;
+		return uri;
 	}
 
 	@Override
@@ -91,7 +93,7 @@ public class TweetElement implements ITimelineElement {
 
 	@Override
 	public Long getPaginationId() {
-		return status.getId();
+		return Long.valueOf(status.getId());
 	}
 
 	@Override
