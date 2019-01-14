@@ -18,9 +18,9 @@ import net.mixednutz.api.core.model.Page;
 import net.mixednutz.api.core.model.PageRequest;
 import net.mixednutz.api.model.IPage;
 import net.mixednutz.api.model.IPageRequest;
+import net.mixednutz.api.model.IPageRequest.Direction;
 import net.mixednutz.api.model.ITimelineElement;
 import net.mixednutz.api.model.IUserSmall;
-import net.mixednutz.api.model.SortDirection;
 import net.mixednutz.api.twitter.model.TweetElement;
 import twitter4j.Paging;
 import twitter4j.RateLimitStatus;
@@ -59,10 +59,25 @@ public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<
 		super();
 		this.conn = conn;
 	}
+	
+	protected PageRequest<Long> parseStringPaginationToken(IPageRequest<String> pagination) {
+		if (pagination.getStart()!=null) {
+			return PageRequest.next(
+					Long.valueOf(pagination.getStart()),
+					pagination.getPageSize(),
+					pagination.getDirection());
+		} 
+		return null;
+	}
 
 	@Override
 	public Page<TweetElement, Long> getTimeline() {
 		return getTimeline(null);
+	}
+	
+	@Override
+	public IPage<? extends ITimelineElement, Long> getTimelineStringToken(IPageRequest<String> pagination) {
+		return getTimeline(parseStringPaginationToken(pagination));
 	}
 
 	@Override
@@ -112,6 +127,11 @@ public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<
 	public IPage<? extends ITimelineElement, Long> getPublicTimeline() {
 		return getPublicTimeline(null);
 	}
+	
+	@Override
+	public IPage<? extends ITimelineElement, Long> getPublicTimelineStringToken(IPageRequest<String> pagination) {
+		return getPublicTimeline(parseStringPaginationToken(pagination));
+	}
 
 	@Override
 	public IPage<? extends ITimelineElement, Long> getPublicTimeline(IPageRequest<Long> pagination) {
@@ -134,6 +154,11 @@ public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<
 	@Override
 	public Page<TweetElement, Long> getUserTimeline() {
 		return getUserTimeline((IPageRequest<Long>)null);
+	}
+	
+	@Override
+	public IPage<? extends ITimelineElement, Long> getUserTimelineStringToken(IPageRequest<String> pagination) {
+		return getUserTimeline(parseStringPaginationToken(pagination));
 	}
 
 	@Override
@@ -181,12 +206,18 @@ public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<
 
 	@Override
 	public IPage<? extends ITimelineElement, Long> getUserTimeline(String username) {
-		throw new UnsupportedOperationException("Twitter does not allow unauthenticated timeline queries, so this isn't implemented");
+		return getUserTimeline(username, null);
+	}
+	
+	@Override
+	public IPage<? extends ITimelineElement, Long> getUserTimelineStringToken(String username,
+			IPageRequest<String> pagination) {
+		return getUserTimeline(username, parseStringPaginationToken(pagination));
 	}
 
 	@Override
 	public IPage<? extends ITimelineElement, Long> getUserTimeline(String username, IPageRequest<Long> pagination) {
-		return getUserTimeline(username, null);
+		throw new UnsupportedOperationException("Twitter does not allow unauthenticated timeline queries, so this isn't implemented");
 	}
 
 	@Override
@@ -200,21 +231,15 @@ public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<
 		if (pageRequest!=null) {
 			paging.setCount(pageRequest.getPageSize());
 			
-			if (pageRequest.getSortDirection()==SortDirection.DESC){
-				
-				//Validate
-				if (pageRequest.getStart()==null || pageRequest.getEnd()==null ||
-						pageRequest.getStart()>pageRequest.getEnd()) {
-					
-					if (pageRequest.getStart()!=null) {
-						paging.setMaxId(pageRequest.getStart());
-					}
-					if (pageRequest.getEnd()!=null) {
-						paging.setSinceId(pageRequest.getEnd());
-					}	
+			if (pageRequest.getDirection()==Direction.LESS_THAN){
+				if (pageRequest.getStart()!=null) {
+					paging.setMaxId(pageRequest.getStart());
 				}
+
 			} else {
-				throw new UnsupportedOperationException("Twitter doesnt do chronological sort");
+				if (pageRequest.getStart()!=null) {
+					paging.setSinceId(pageRequest.getStart());
+				}
 			}
 		}
 				
@@ -222,16 +247,13 @@ public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<
 	}
 	
 	PageRequest<Long> toPageRequest(Integer pageSize, Long maxId, Long sinceId) {
-		PageRequest<Long> pageRequest = new PageRequest<>();
-		pageRequest.setSortDirection(SortDirection.DESC);
-		pageRequest.setPageSize(pageSize);
 		if (maxId!=null) {
-			pageRequest.setStart(maxId);
+			return PageRequest.next(maxId, pageSize, Direction.LESS_THAN);
 		}
 		if (sinceId!=null) {
-			pageRequest.setEnd(sinceId);
+			return PageRequest.next(sinceId, pageSize, Direction.GREATER_THAN);
 		}
-		return pageRequest;
+		return null;
 	}
 	
 	Page<TweetElement, Long> toPage(List<Status> items, Paging prevPage) {
@@ -325,5 +347,5 @@ public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<
 	private static void sleepUntilNextAllowedUserTimelineRequest(Connection<Twitter> conn) {
 		sleepUntil(nextUserTimelineRequest.containsKey(conn)?nextUserTimelineRequest.get(conn):0);
 	}
-	
+
 }

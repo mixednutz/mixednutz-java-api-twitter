@@ -38,8 +38,7 @@ public class TweetElement implements ITimelineElement {
 		this.status = status;
 		this.url = "https://twitter.com/"+status.getUser().getScreenName()+
 				"/status/"+status.getId();
-		this.uri = status.getUser().getScreenName()+
-				"/status/"+status.getId();
+		this.uri = "/statuses/show/"+status.getId();
 		this.alternateLinks.add(new AlternateLink("https://publish.twitter.com/oembed?url="+url,
 				APPLICATION_JSON_OEMBED));
 	}

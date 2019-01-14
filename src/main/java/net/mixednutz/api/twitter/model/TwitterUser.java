@@ -25,7 +25,7 @@ public class TwitterUser implements IUserSmall {
 
 	@Override
 	public String getUri() {
-		return null;
+		return "/users/show.json?screen_name="+user.getScreenName();
 	}
 
 	@Override
