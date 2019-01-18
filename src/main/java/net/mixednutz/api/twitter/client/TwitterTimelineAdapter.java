@@ -71,6 +71,12 @@ public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<
 	}
 
 	@Override
+	public <T> IPageRequest<T> getTimelinePollRequest(T start) {
+		// Get tweets from starting time.  Limit 200.
+		return PageRequest.next(start, 200, Direction.GREATER_THAN);
+	}
+
+	@Override
 	public Page<TweetElement, Long> getTimeline() {
 		return getTimeline(null);
 	}
