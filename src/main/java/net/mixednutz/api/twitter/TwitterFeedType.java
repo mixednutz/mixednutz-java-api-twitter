@@ -1,8 +1,11 @@
 package net.mixednutz.api.twitter;
 
-import net.mixednutz.api.model.INetworkInfoSmall;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-public class TwitterFeedType implements INetworkInfoSmall {
+import net.mixednutz.api.core.model.NetworkInfoSmall;
+
+@JsonIgnoreProperties(ignoreUnknown=true)
+public class TwitterFeedType extends NetworkInfoSmall {
 	
 	private static final String DISPLAY_NAME = "Twitter";
 	private static final String HOST_NAME = "twitter.com";
@@ -11,24 +14,12 @@ public class TwitterFeedType implements INetworkInfoSmall {
 	
 	private static TwitterFeedType instance;
 
-	@Override
-	public String getDisplayName() {
-		return DISPLAY_NAME;
-	}
-
-	@Override
-	public String getHostName() {
-		return HOST_NAME;
-	}
-
-	@Override
-	public String getId() {
-		return ID;
-	}
-
-	@Override
-	public String getFontAwesomeIconName() {
-		return ICON_NAME;
+	public TwitterFeedType() {
+		super();
+		this.setDisplayName(DISPLAY_NAME);
+		this.setHostName(HOST_NAME);
+		this.setId(ID);
+		this.setFontAwesomeIconName(ICON_NAME);
 	}
 
 	public static TwitterFeedType getInstance() {

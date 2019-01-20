@@ -67,7 +67,7 @@ public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<
 					pagination.getPageSize(),
 					pagination.getDirection());
 		} 
-		return null;
+		return PageRequest.first(pagination.getPageSize(), pagination.getDirection(), Long.class);
 	}
 
 	@Override
@@ -277,10 +277,10 @@ public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<
 		if (!items.isEmpty()) {
 			int pageSize =prevPage!=null&&prevPage.getCount()>0?prevPage.getCount():items.size();
 			newPage.setNextPage(toPageRequest(pageSize, 
-					newItemList.getLast().getPaginationId(), null));
+					Long.valueOf(newItemList.getLast().getPaginationId()), null));
 			newPage.setHasNext(true);
 			newPage.setPrevPage(toPageRequest(pageSize, 
-					null, newItemList.getFirst().getPaginationId()));
+					null, Long.valueOf(newItemList.getFirst().getPaginationId())));
 			newPage.setHasPrev(true);
 		}
 		return newPage;
