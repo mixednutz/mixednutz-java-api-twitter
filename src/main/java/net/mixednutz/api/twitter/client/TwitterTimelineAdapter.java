@@ -125,7 +125,7 @@ public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<
 			}
 						
 			//Wrap in Page
-			return toPage(results, paging);
+			return toPage(results, paging, pagination);
 		} catch (TwitterException e) {
 			throw new RuntimeException(e);
 		}
@@ -206,7 +206,7 @@ public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<
 			}
 						
 			//Wrap in Page
-			return toPage(results, paging);
+			return toPage(results, paging, pagination);
 		} catch (TwitterException e) {
 			throw new RuntimeException(e);
 		}
@@ -264,7 +264,12 @@ public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<
 		return null;
 	}
 	
-	Page<TweetElement, Long> toPage(List<Status> items, Paging prevPage) {
+	PageRequest<Long> toPageRequest(IPageRequest<Long> pageRequest) {
+		return PageRequest.next(pageRequest.getStart(), pageRequest.getPageSize(), 
+				pageRequest.getDirection());
+	}
+	
+	Page<TweetElement, Long> toPage(List<Status> items, Paging prevPage, IPageRequest<Long> pageRequest) {
 		LinkedList<TweetElement> newItemList = new LinkedList<>();
 		for (Status item: items) {
 			newItemList.add(new TweetElement(item));
@@ -272,18 +277,23 @@ public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<
 				
 		Page<TweetElement, Long> newPage = new Page<>();
 		newPage.setItems(newItemList);
-		if (prevPage!=null) {
-			newPage.setPageRequest(toPageRequest(prevPage.getCount(), 
-					prevPage.getMaxId(), prevPage.getSinceId()));
+		if (pageRequest!=null) {
+			newPage.setPageRequest(toPageRequest(pageRequest));
 		}
 		if (!items.isEmpty()) {
 			int pageSize =prevPage!=null&&prevPage.getCount()>0?prevPage.getCount():items.size();
-			newPage.setNextPage(toPageRequest(pageSize, 
-					Long.valueOf(newItemList.getLast().getPaginationId()), null));
+			Long last = Long.valueOf(newItemList.getLast().getPaginationId());
+			Long first = Long.valueOf(newItemList.getFirst().getPaginationId());
+			if ((pageRequest!=null && Direction.GREATER_THAN.equals(pageRequest.getDirection())) ||
+					(prevPage.getMaxId()<1 && prevPage.getSinceId()>=1)) {
+				newPage.setNextPage(toPageRequest(pageSize, null, first));
+				newPage.setReversePage(toPageRequest(pageSize, last, null));
+			} else {
+				newPage.setNextPage(toPageRequest(pageSize, last, null));
+				newPage.setReversePage(toPageRequest(pageSize, null, first));
+			} 
 			newPage.setHasNext(true);
-			newPage.setPrevPage(toPageRequest(pageSize, 
-					null, Long.valueOf(newItemList.getFirst().getPaginationId())));
-			newPage.setHasPrev(true);
+			newPage.setHasReverse(true);
 		}
 		return newPage;
 	}
