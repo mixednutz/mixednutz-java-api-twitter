@@ -117,8 +117,10 @@ public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<
 			//Remember when we added +5? Let's
 			//trim to ensure results match original page count
 			if (!results.isEmpty() && 
-					pagination!=null && pagination.getPageSize()>0 && results.size()>pagination.getPageSize()) {
-				results = results.subList(0, pagination.getPageSize());
+					pagination!=null && pagination.getPageSize()>0) {
+				if (results.size()>pagination.getPageSize()) {
+					results = results.subList(0, pagination.getPageSize());
+				}
 				paging.setCount(pagination.getPageSize());
 			}
 						
