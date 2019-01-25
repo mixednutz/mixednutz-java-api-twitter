@@ -158,6 +158,12 @@ public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public <T> IPageRequest<T> getUserTimelinePollRequest(T start) {
+		// Get tweets from starting time.  Limit 200.
+		return getTimelinePollRequest(start);
+	}
 
 	@Override
 	public Page<TweetElement, Long> getUserTimeline() {
