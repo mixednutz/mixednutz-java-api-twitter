@@ -20,10 +20,13 @@ public class TweetElement extends TimelineElement implements ITimelineElement {
 	private static final String APPLICATION_JSON_OEMBED = "application/json+oembed";
 		
 	private static TimelineElement.Type TYPE = new TimelineElement.Type(){
+		TwitterFeedType feedType = TwitterFeedType.getInstance();
 		@Override
 		public String getName() {return "tweet";}
 		@Override
-		public String getNamespace() {return "twitter.com";}
+		public String getNamespace() {return feedType.getHostName();}
+		@Override
+		public String getId() {return feedType.getId()+"_"+getName();}
 		};
 	
 	FavoriteCount favorites;
