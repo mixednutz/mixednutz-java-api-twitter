@@ -22,6 +22,7 @@ import net.mixednutz.api.model.IPageRequest.Direction;
 import net.mixednutz.api.model.ITimelineElement;
 import net.mixednutz.api.model.IUserSmall;
 import net.mixednutz.api.twitter.model.TweetElement;
+import net.mixednutz.api.twitter.model.TwitterUser;
 import twitter4j.Paging;
 import twitter4j.RateLimitStatus;
 import twitter4j.ResponseList;
@@ -149,14 +150,22 @@ public class TwitterTimelineAdapter implements TimelineClient<Long>, UserClient<
 
 	@Override
 	public IUserSmall getUser() {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new TwitterUser(conn.getApi().users().verifyCredentials());
+		} catch (TwitterException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	public IUserSmall getUser(String username) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new TwitterUser(conn.getApi().users().showUser(username));
+		} catch (TwitterException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
 	}
 	
 	@Override

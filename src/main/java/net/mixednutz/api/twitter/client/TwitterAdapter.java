@@ -38,8 +38,7 @@ public class TwitterAdapter implements MixednutzClient {
 
 	@Override
 	public UserClient<Long> getUserClient() {
-		// TODO Auto-generated method stub
-		return null;
+		return timelineAdapter;
 	}
 
 	private void initSubApis() {
