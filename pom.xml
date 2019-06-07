@@ -33,6 +33,26 @@
 	</properties>
 
 	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId> 
+				<configuration>
+        			<excludedGroups>net.mixednutz.api.core.test.IntegrationTest</excludedGroups>
+    			</configuration>
+			 </plugin>
+			 
+			 <plugin>
+			 	<groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                	<includes>
+				      <include>**/*.java</include>
+				    </includes>
+                    <groups>net.mixednutz.api.core.test.IntegrationTest</groups>
+                </configuration>
+             </plugin>
+		</plugins>
 	</build>
 	
 	<dependencies>
@@ -46,6 +66,13 @@
 			<groupId>net.mixednutz</groupId>
 			<artifactId>mixednutz-java-api-core</artifactId>
 			<version>${mixednutz-api-core.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.mixednutz</groupId>
+			<artifactId>mixednutz-java-api-core</artifactId>
+			<version>${mixednutz-api-core.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
 		</dependency>
 		
 		<!--  Spring -->
