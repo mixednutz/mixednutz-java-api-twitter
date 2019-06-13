@@ -12,7 +12,7 @@ public class TwitterUser extends UserSmall {
 
 	public TwitterUser(User user) {
 		this.setProviderId(Long.toString(user.getId()));
-		this.setUrl(user.getURL());
+		this.setUrl("https://twitter.com/"+user.getScreenName());
 		this.setUri("/users/show.json?screen_name="+user.getScreenName());
 		this.setUsername("@"+user.getScreenName());
 		this.setDisplayName(user.getName());
