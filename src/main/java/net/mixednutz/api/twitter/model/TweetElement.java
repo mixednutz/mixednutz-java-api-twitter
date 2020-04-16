@@ -38,14 +38,21 @@ public class TweetElement extends TimelineElement implements ITimelineElement {
 	public TweetElement(Status status) {
 		super();
 		this.setType(TYPE);
-		this.setProviderId(Long.toString(status.getId()));
-		this.setUrl("https://twitter.com/"+status.getUser().getScreenName()+
-				"/status/"+status.getId());
-		this.setUri("/statuses/show/"+status.getId());
 		this.setPostedByUser(new TwitterUser(status.getUser()));
 		this.setPostedOnDate(ZonedDateTime.ofInstant(status.getCreatedAt().toInstant(), ZoneId.systemDefault()));
 		this.setPaginationId(Long.toString(status.getId()));
 		this.setDescription(status.getText());
+		if (status.isRetweet()) {
+			/*
+			 * If it's a RT, keep user, time, and description of RT, use original tweet's info
+			 * for provider ID, URL/URI and reshare info.
+			 */
+			status = status.getRetweetedStatus();
+		}
+		this.setProviderId(Long.toString(status.getId()));
+		this.setUrl("https://twitter.com/"+status.getUser().getScreenName()+
+				"/status/"+status.getId());
+		this.setUri("/statuses/show/"+status.getId());
 		this.setAlternateLinks(new ArrayList<>());
 		this.getAlternateLinks().add(new AlternateLink("https://publish.twitter.com/oembed?url="+getUrl(),
 				APPLICATION_JSON_OEMBED));
