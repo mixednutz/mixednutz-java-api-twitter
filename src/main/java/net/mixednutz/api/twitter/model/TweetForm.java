@@ -7,6 +7,10 @@ public class TweetForm implements IPost {
 	
 	String status;
 	
+	public TweetForm() {
+		super();
+	}
+
 	public TweetForm(String status) {
 		super();
 		this.status = status;
@@ -15,6 +19,18 @@ public class TweetForm implements IPost {
 	public StatusUpdate toStatusUpdate() {
 		StatusUpdate statusUpdate = new StatusUpdate(status);
 		return statusUpdate;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	
+	public void setComposeBody(String status) {
+		setStatus(status);
 	}
 	
 }

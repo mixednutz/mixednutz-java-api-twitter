@@ -27,5 +27,10 @@ public class StatusUpdateAdapter implements PostClient<TweetForm> {
 		}
 		
 	}
+
+	@Override
+	public TweetForm create() {
+		return new TweetForm();
+	}
 	
 }
