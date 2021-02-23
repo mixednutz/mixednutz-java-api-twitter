@@ -22,6 +22,18 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	
+	<organization>
+        <name>Andrew Festa</name>
+        <url>http://www.andrewfesta.com</url>
+    </organization>
+        
+    <scm>
+		<connection>scm:git:ssh://git@github.com/mixednutz/mixednutz-java-api-twitter.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com/mixednutz/mixednutz-java-api-twitter.git</developerConnection>
+		<url>https://github.com/mixednutz/mixednutz-java-api-twitter</url>
+		<tag>HEAD</tag>
+    </scm>
+	
 	<!-- 
 		Deploy JARs to GitHub
 	 -->
@@ -53,8 +65,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
 		
-		<mixednutz-api.version>2.0.0-SNAPSHOT</mixednutz-api.version>
-		<mixednutz-api-core.version>2.0.0-SNAPSHOT</mixednutz-api-core.version>
+		<mixednutz-api.version>2.0.0</mixednutz-api.version>
+		<mixednutz-api-core.version>2.0.0</mixednutz-api-core.version>
 		<spring-social.version>1.1.6.RELEASE</spring-social.version>
 		<twitter4j.version>4.0.2</twitter4j.version>
 	
