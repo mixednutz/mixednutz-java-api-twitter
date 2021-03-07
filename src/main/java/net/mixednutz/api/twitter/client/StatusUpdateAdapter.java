@@ -1,5 +1,8 @@
 package net.mixednutz.api.twitter.client;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.springframework.social.connect.Connection;
 
 import net.mixednutz.api.client.PostClient;
@@ -31,6 +34,11 @@ public class StatusUpdateAdapter implements PostClient<TweetForm> {
 	@Override
 	public TweetForm create() {
 		return new TweetForm();
+	}
+
+	@Override
+	public Map<String, Object> referenceDataForPosting() {
+		return Collections.emptyMap();
 	}
 	
 }

@@ -64,8 +64,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
 		
-		<mixednutz-api.version>2.0.0</mixednutz-api.version>
-		<mixednutz-api-core.version>2.0.0</mixednutz-api-core.version>
+		<mixednutz-api-core.version>2.0.1-SNAPSHOT</mixednutz-api-core.version>
 		<spring-social.version>1.1.6.RELEASE</spring-social.version>
 		<twitter4j.version>4.0.2</twitter4j.version>
 	
@@ -109,11 +108,6 @@
 	
 	<dependencies>
 	
-		<dependency>
-			<groupId>net.mixednutz</groupId>
-			<artifactId>mixednutz-java-api</artifactId>
-			<version>${mixednutz-api.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>net.mixednutz</groupId>
 			<artifactId>mixednutz-java-api-core</artifactId>
