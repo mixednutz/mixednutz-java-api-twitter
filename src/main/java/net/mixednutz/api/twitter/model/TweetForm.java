@@ -1,5 +1,7 @@
 package net.mixednutz.api.twitter.model;
 
+import java.io.Serializable;
+
 import net.mixednutz.api.model.IPost;
 import twitter4j.StatusUpdate;
 
@@ -91,6 +93,11 @@ public class TweetForm implements IPost {
 
 	public void setTags(String[] tags) {
 		this.tagsPart = tags;
+	}
+
+	@Override
+	public void setInReplyTo(Serializable inReplyToId) {
+		this.inReplyToStatusId = inReplyToId.toString();
 	}
 	
 }
