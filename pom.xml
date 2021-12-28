@@ -89,7 +89,9 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId> 
 				<configuration>
-        			<excludedGroups>net.mixednutz.api.core.test.IntegrationTest</excludedGroups>
+					<properties>
+	                    <excludeTags>IntegrationTest</excludeTags>
+	                </properties>
     			</configuration>
 			 </plugin>
 			 
@@ -100,7 +102,9 @@
                 	<includes>
 				      <include>**/*.java</include>
 				    </includes>
-                    <groups>net.mixednutz.api.core.test.IntegrationTest</groups>
+                    <properties>
+	                    <includeTags>IntegrationTest</includeTags>
+	                </properties>
                 </configuration>
              </plugin>
 		</plugins>
