@@ -3,6 +3,7 @@ package net.mixednutz.api;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.social.connect.web.CredentialsCallback;
 import org.springframework.social.connect.web.CredentialsInterceptor;
 import org.springframework.social.twitter4j.connect.TwitterConnectionFactory;
@@ -11,6 +12,7 @@ import net.mixednutz.api.provider.IOauth1Credentials;
 import net.mixednutz.api.twitter.provider.TwitterProvider;
 import twitter4j.Twitter;
 
+@Profile("twitter")
 @Configuration
 @ConfigurationProperties(prefix="mixednutz.social")
 public class TwitterConfig {
