@@ -1,11 +1,11 @@
 package net.mixednutz.api.twitter.client;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.social.connect.Connection;
@@ -18,11 +18,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import net.mixednutz.api.core.model.Page;
 import net.mixednutz.api.core.model.PageRequest;
-import net.mixednutz.api.core.test.IntegrationTest;
 import net.mixednutz.api.twitter.model.TweetElement;
 import twitter4j.Twitter;
 
-@Category(IntegrationTest.class)
+@Tag("IntegrationTest")
 public class TwitterTimelineAdapterTest {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(TwitterTimelineAdapterTest.class);
@@ -35,7 +34,7 @@ public class TwitterTimelineAdapterTest {
 	
 	private TwitterTimelineAdapter timelineAdapter;
 	
-	@Ignore
+	@Disabled
 	@Test
 	public void testGetTimeline() {
 		
@@ -86,7 +85,7 @@ public class TwitterTimelineAdapterTest {
 
 	}
 	
-	@Ignore
+	@Disabled
 	@Test
 	public void testPoll() {
 		
@@ -147,7 +146,7 @@ public class TwitterTimelineAdapterTest {
 
 	}
 	
-	@Ignore
+	@Disabled
 	@Test
 	public void testGetUserTimeline() {
 		
