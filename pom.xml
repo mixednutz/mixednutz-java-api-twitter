@@ -64,7 +64,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>11</java.version>
 		
-		<mixednutz-api-core.version>2.1.0-SNAPSHOT</mixednutz-api-core.version>
+		<mixednutz-api-core.version>2.1.0</mixednutz-api-core.version>
 		<spring-social.version>1.1.6.RELEASE</spring-social.version>
 		<twitter4j.version>4.0.2</twitter4j.version>
 	
